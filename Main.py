@@ -89,15 +89,4 @@ def main():
 
 
 
-    # # Get the IP address of the VM
-    # guest = session.console.guest
-    # ip = guest.getNetworkAdapter(0).getIpAddress(0)
-
-    # # Install and configure DNS server
-    # guest.execute("/bin/bash", ["sudo", "apt-get", "update"])
-    # guest.execute("/bin/bash", ["sudo", "apt-get", "-y", "install", "bind9"])
-
-# Wywołanie głównej funkcji
-# create_dns_server("vm1")
-
 main()
