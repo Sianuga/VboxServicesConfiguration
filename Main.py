@@ -290,7 +290,62 @@ def create_samba(session,session2):
                                         ";\n")
 
 
-
+def create_dns(session,session2):
+    print("You need to add zone 'aso.local' {type master; file '/etc/bind/db.aso.local';}; in named.conf.local file")
+    print("You need to add "+
+          "@   IN   NS   vm2.aso.local. \n" +
+		    "vm2 IN   A    10.1.2.102 \n"+
+		    "www IN   CNAME  vm2.aso.local. \n"+
+		    "vm1 IN   A    10.1.2.101\n")
+    print("You need to add in the beginning of the file named.conf.options: "+
+          "acl 'trusted {10.1.2.0/24;};'"+
+          "and in options: recursion yes; allow-recursion { trusted; }; listen-on { 10.1.2.102; }; allow-transfer { none; }; forwarders {8.8.8.8; 8.8.4.4;};")
+    print("You need to write nameserver 10.1.2.102 in resolv.conf file in vm2")
+    print("You need to write nameserver 10.1.2.102 in resolv.conf file in vm1")
+    session2.console.keyboard.put_keys("sudo apt update"+
+                                        "; sudo apt install bind9 bind9utils bind9-doc dnsutils"+
+                                        "; sudo cd /etc/bind"+
+                                        "; sudo nano named.conf.local"+
+                                        "; sudo cp db.local db.aso.local"+
+                                        "; sudo nano db.aso.local"+
+                                        "; sudo nano /etc/bind/named.conf.options"+
+                                        "; sudo systemctl restart bind9"+
+                                        "; sudo named-checkonf /etc/bind/named.conf"+
+                                        "; sudo named-checkonf /etc/bind/named.conf.local"+
+                                        "; sudo named-checkzone aso.local /etc/bind/db.aso.local"+
+                                        "; sudo systemctl status bind9"+
+                                        "; sudo nano /etc/resolv.conf"+
+                                        "; sudo nslookup vm1.aso.local"+
+                                        "; sudo nslookup vm2.aso.local"+
+                                        "; sudo ping -c 5 vm1.aso.local"+
+                                        "; sudo ping -c 5 vm2.aso.local"+
+                                        "; sudo host vm2.aso.local")
+    
+    session.console.keyboard.put_keys("sudo nano /etc/resolv.conf"+
+                                        ";sudo ping -c 5 vm1.aso.local"+
+                                        ";sudo ping -c 5 vm2.aso.local"+
+                                        ";sudo host vm2.aso.local")
+    
+def create_dhcp(session,session2):
+    print("in isc-dhcp-server write INTERFACESv4='eth0'")
+    print("in dhcpd.conf write: option domain-name 'aso.local';option doamin-name-servers 10.1.2.102;"+
+          "subnet 10.1.2.0 netmask 255.255.255.0 {range 10.1.2.110 10.1.2.200;option routers 10.1.2.102;};")
+    print("in /etc/network/interfaces.d/40-network-cfg write: auto eth0; iface eth0 inet dhcp; # rest)")
+    session2.console.keyboard.put_keys("sudo apt update"+
+                                        "; sudo apt install isc-dhcp-server"+
+                                        "; sudo nano /etc/default/isc-dhcp-server"+
+                                        "; sudo nano /etc/dhcp/dhcpd.conf"+
+                                        "; sudo systemctl restart isc-dhcp-server"+
+                                        "; sudo systemctl status isc-dhcp-server")
+    session.console.keyboard.put_keys("sudo nano ifdown 10.1.2.101/24"+
+                                        "; sudo nano /etc/network/interfaces.d/40-network-cfg"+
+                                        "; sudo ifup eth0"+
+                                        "; sudo dhclient eth0"+
+                                        "; sudo ipa a"+
+                                        "; sudo dhclient -r eth0"+
+                                        "; sudo dhclient eth0"+
+                                        "; sudo ip a")
+    
 def main():
     print("Welcome to the script configuring your VMs! The setup is in progress")
     print("DO NOT START CONFIGURING UNTIL THE VMs ARE UP AND RUNNING")
