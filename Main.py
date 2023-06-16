@@ -4,8 +4,8 @@ import time
 
 # Wybór konfiguracji usługi
 def configure_service(service_name, session, session2):
-    session.console.keyboard.put_keys("sudo cd" + '\n')
-    session2.console.keyboard.put_keys("sudo cd" + '\n')
+    session.console.keyboard.put_keys("sudo cd ~" + '\n')
+    session2.console.keyboard.put_keys("sudo cd ~" + '\n')
 
     if service_name == "DNS":
         # Logika konfiguracji usługi DNS
