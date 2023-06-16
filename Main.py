@@ -103,7 +103,7 @@ def create_dhcp(session,session2):
                                         "; sudo dhclient -r eth0"+
                                         "; sudo dhclient eth0"+
                                         "; sudo ip a"+
-                                        )
+                                        f";\n")
 
 
 
