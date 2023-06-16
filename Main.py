@@ -349,24 +349,6 @@ def create_dhcp(session,session2):
                                         "; sudo ip a"+
                                         f";\n")
     
-def create_samba(session,session2):
-    print("You need to add in the end of the file smb.conf: [share] path = /home/share browseable = yes writable = yes guest ok = no valid users = user1")
-    session2.console.keyboard.put_keys("sudo apt update"+
-                                        "; sudo apt install samba"+
-                                        "; sudo mkdir /home/share"+
-                                        "; sudo chmod 777 /home/share"+
-                                        "; sudo touch /home/share/test.txt"+
-                                        "; sudo nano /etc/samba/smb.conf"+
-                                        "; sudo adduser user1"+
-                                        "; sudo smbpasswd -a user1"+
-                                        "; sudo systemctl restart smbd"+
-                                        "; sudo systemctl status smbd"+
-                                        f";\n")
-    session.console.keyboard.put_keys("sudo apt update"+
-                                        "; sudo apt install smbclient"+
-                                        "; sudo smbclient //10.1.2.102/share -U user1"+
-                                        ";\n")
-                                        
 def main():
     print("Welcome to the script configuring your VMs! The setup is in progress")
     print("DO NOT START CONFIGURING UNTIL THE VMs ARE UP AND RUNNING")
