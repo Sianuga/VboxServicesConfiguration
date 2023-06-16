@@ -2,10 +2,12 @@ import virtualbox
 import time
 
 
+
+
+
 # Wybór konfiguracji usługi
 def configure_service(service_name, session, session2):
-    session.console.keyboard.put_keys("sudo cd ~" + '\n')
-    session2.console.keyboard.put_keys("sudo cd ~" + '\n')
+
 
     if service_name == "DNS":
         # Logika konfiguracji usługi DNS
@@ -45,23 +47,27 @@ def configure_service(service_name, session, session2):
         return True
     
 def create_dns(session,session2):
-    print("You need to add zone 'aso.local' {type master; file '/etc/bind/db.aso.local';}; in named.conf.local file")
-    print("You need to add "+
+    print("You need to add 'zone 'aso.local'' {type master; file '/etc/bind/db.aso.local';}; in named.conf.local file")
+    print("You need to add in /etc/bind/db.aso.local"+
           "@   IN   NS   vm2.aso.local. \n" +
-		    "vm2 IN   A    10.1.2.102 \n"+
-		    "www IN   CNAME  vm2.aso.local. \n"+
-		    "vm1 IN   A    10.1.2.101\n")
-    print("You need to add in the beginning of the file named.conf.options: "+
+            "vm2 IN   A    10.1.2.102 \n"+
+            "www IN   CNAME  vm2.aso.local. \n"+
+            "vm1 IN   A    10.1.2.101\n")
+    print("""You need to add in the beginning of the file named.conf.options: "+
           "acl 'trusted {10.1.2.0/24;};'"+
-          "and in options: recursion yes; allow-recursion { trusted; }; listen-on { 10.1.2.102; }; allow-transfer { none; }; forwarders {8.8.8.8; 8.8.4.4;};")
+          "and in options: 
+          recursion yes; 
+          allow-recursion { trusted; };
+            listen-on { 10.1.2.102; };
+              allow-transfer { none; };
+                forwarders {8.8.8.8; 8.8.4.4;};""")
     print("You need to write nameserver 10.1.2.102 in resolv.conf file in vm2")
     print("You need to write nameserver 10.1.2.102 in resolv.conf file in vm1")
     session2.console.keyboard.put_keys("sudo apt update"+
                                         "; sudo apt install bind9 bind9utils bind9-doc dnsutils"+
-                                        "; sudo cd /etc/bind"+
-                                        "; sudo nano named.conf.local"+
-                                        "; sudo cp db.local db.aso.local"+
-                                        "; sudo nano db.aso.local"+
+                                        "; sudo nano /etc/bind/named.conf.local"+
+                                        "; sudo cp etc/bind/db.local /etc/bind/db.aso.local"+
+                                        "; sudo nano etc/bind/db.aso.local"+
                                         "; sudo nano /etc/bind/named.conf.options"+
                                         "; sudo systemctl restart bind9"+
                                         "; sudo named-checkonf /etc/bind/named.conf"+
@@ -74,18 +80,24 @@ def create_dns(session,session2):
                                         "; sudo ping -c 5 vm1.aso.local"+
                                         "; sudo ping -c 5 vm2.aso.local"+
                                         "; sudo host vm2.aso.local"+
-                                        f";\n")
+                                        f'\n')
     waiting = input("Press enter when vm2 is done")
     session.console.keyboard.put_keys("sudo nano /etc/resolv.conf"+
                                         ";sudo ping -c 5 vm1.aso.local"+
                                         ";sudo ping -c 5 vm2.aso.local"+
                                         ";sudo host vm2.aso.local"+
-                                        f";\n")
+                                        f'\n')
     
 def create_dhcp(session,session2):
     print("in isc-dhcp-server write INTERFACESv4='eth0'")
-    print("in dhcpd.conf write: option domain-name 'aso.local';option doamin-name-servers 10.1.2.102;"+
-          "subnet 10.1.2.0 netmask 255.255.255.0 {range 10.1.2.110 10.1.2.200;option routers 10.1.2.102;};")
+    print("""in dhcpd.conf write and activate authoritative: 
+    option domain-name 'aso.local';
+    option domain-name-servers 10.1.2.102;
+    subnet 10.1.2.0 netmask 255.255.255.0 {
+        range 10.1.2.110 10.1.2.200;
+        option routers 10.1.2.102;
+        }
+        """)
     print("in /etc/network/interfaces.d/40-network-cfg write: auto eth0; iface eth0 inet dhcp; # rest)")
     session2.console.keyboard.put_keys("sudo apt update"+
                                         "; sudo apt install isc-dhcp-server"+
@@ -93,7 +105,7 @@ def create_dhcp(session,session2):
                                         "; sudo nano /etc/dhcp/dhcpd.conf"+
                                         "; sudo systemctl restart isc-dhcp-server"+
                                         "; sudo systemctl status isc-dhcp-server"+
-                                        f";\n")
+                                        f'\n')
     waiting = input("Press enter when vm2 is done")
     session.console.keyboard.put_keys("sudo nano ifdown 10.1.2.101/24"+
                                         "; sudo nano /etc/network/interfaces.d/40-network-cfg"+
@@ -103,14 +115,42 @@ def create_dhcp(session,session2):
                                         "; sudo dhclient -r eth0"+
                                         "; sudo dhclient eth0"+
                                         "; sudo ip a"+
-                                        f";\n")
+                                        "; sudo dhclient -r eth0"+
+                                        f'\n')
 
 
 
 def create_www_server(session, session2):
+
     config = input("Do you want to create HTML/PHP/SHARE configuration? (HTML/PHP/SHARE): ")
     folderName = input("Give folder name: ")
     port = input("Give port number (default: 80): ")
+
+    configFile = f"""
+<VirtualHost *:{port}>
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/{folderName}/html
+""" + """
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+</VirtualHost>
+
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+
+
+"""
+
+
+
+
+
+
+
+
+
+
+
    
     if config == "HTML":
         print("You need to change DocumentRoot to /var/www/Imie_Nazwisko/html/ in 000-default.conf file (Imie_Nazwisko is an example)")
@@ -125,6 +165,7 @@ def create_www_server(session, session2):
                                         f"; sudo echo -e '<html>\n<body>\n<p>HELLO WORLD</p>\n</body>\n</html>' | sudo tee /var/www/{folderName}/html/index.html"+
                                         f"; sudo chown -R $USER:$USER /var/www/{folderName}/html"+
                                         f"; sudo chmod -R 755 /var/www/{folderName}"+
+                                        f"; echo -e '{configFile}' | sudo tee /etc/apache2/sites-available/000-default.conf "+
                                         "; sudo nano /etc/apache2/sites-available/000-default.conf"+
                                         "; sudo nano /etc/apache2/apache2.conf"+
                                         "; sudo nano /etc/apache2/ports.conf"+
@@ -154,7 +195,7 @@ def create_www_server(session, session2):
                                         f"; sudo chown -R $USER:$USER /var/www/{folderName}/html"+
                                         f"; sudo chmod -R 755 /var/www/{folderName}"+
                                         "; sudo nano /etc/apache2/mods-enabled/dir.conf"+
-                                        "; sudo nano /etc/apache2/sites-available/000-default.conf"+
+                                        f"; echo -e {configFile} | sudo tee /etc/apache2/sites-available/000-default.conf"+
                                         "; sudo nano /etc/apache2/apache2.conf"+
                                         "; sudo nano /etc/apache2/ports.conf"+
                                         "; sudo systemctl restart apache2"+
@@ -183,7 +224,7 @@ def create_www_server(session, session2):
                                         "; sudo nano /etc/apache2/mods-enabled/userdir.conf"+
                                         "; sudo ln -s /etc/apache2/mods-available/userdir.conf /etc/apache2/mods-enabled/userdir.conf" +
                                         "; sudo ln -s /etc/apache2/mods-available/userdir.load /etc/apache2/mods-enabled/userdir.load" +
-                                        "; sudo nano /etc/apache2/sites-available/000-default.conf"+
+                                        f"; echo -e {configFile} | sudo tee /etc/apache2/sites-available/000-default.conf "+
                                         "; sudo nano /etc/apache2/apache2.conf"+
                                         "; sudo nano /etc/apache2/ports.conf"+
                                         "; sudo systemctl restart apache2"+
@@ -248,8 +289,14 @@ def create_ftp(session, session2):
           UserAlias anonymous ftp
           MaxClients 10
           DisplayLogin welcome.msg
-          DisplayChdir .message
-          AllowsStoreRestart on          
+          DisplayFirstChdir .message
+          AllowStoreRestart on     
+
+          Then on VM1:
+          as a name write "anonymous"     
+          as a password press Enter
+          the default directory is /srv/ftp
+          ls -l to check files
           """)       
     session2.console.keyboard.put_keys("sudo apt update"+
                                       "; sudo apt install proftpd-basic openssl"+
@@ -276,7 +323,13 @@ def create_ftp(session, session2):
                                         f"; \n")
     
 def create_samba(session,session2):
-    print("You need to add in the end of the file smb.conf: [share] path = /home/share browseable = yes writable = yes guest ok = no valid users = user1")
+    print("""You need to add in the end of the file smb.conf: 
+    [share] 
+    path = /home/share 
+    browseable = yes 
+    writable = yes 
+    guest ok = no 
+    valid users = user1""")
     session2.console.keyboard.put_keys("sudo apt update"+
                                         "; sudo apt install samba"+
                                         "; sudo mkdir /home/share"+
@@ -288,6 +341,7 @@ def create_samba(session,session2):
                                         "; sudo systemctl restart smbd"+
                                         "; sudo systemctl status smbd"+
                                         f";\n")
+    waiting = input("Press enter when vm2 is done")
     session.console.keyboard.put_keys("sudo apt update"+
                                         "; sudo apt install smbclient"+
                                         "; sudo smbclient //10.1.2.102/share -U user1"+
@@ -295,12 +349,19 @@ def create_samba(session,session2):
 
 
 def create_dns(session,session2):
-    print("You need to add zone 'aso.local' {type master; file '/etc/bind/db.aso.local';}; in named.conf.local file")
-    print("You need to add "+
-          "@   IN   NS   vm2.aso.local. \n" +
-		    "vm2 IN   A    10.1.2.102 \n"+
-		    "www IN   CNAME  vm2.aso.local. \n"+
-		    "vm1 IN   A    10.1.2.101\n")
+    print("""You need to add 
+    '
+    zone "aso.local" {
+        type master;
+        file '/etc/bind/db.aso.local';
+        };
+    
+    ' in named.conf.local file""")
+    print("""You need to add +
+          @   IN   NS   vm2.aso.local.  
+            vm2 IN   A    10.1.2.102 
+            www IN   CNAME  vm2.aso.local. 
+            vm1 IN   A    10.1.2.101""")
     print("You need to add in the beginning of the file named.conf.options: "+
           "acl 'trusted {10.1.2.0/24;};'"+
           "and in options: recursion yes; allow-recursion { trusted; }; listen-on { 10.1.2.102; }; allow-transfer { none; }; forwarders {8.8.8.8; 8.8.4.4;};")
