@@ -73,12 +73,14 @@ def create_dns(session,session2):
                                         "; sudo nslookup vm2.aso.local"+
                                         "; sudo ping -c 5 vm1.aso.local"+
                                         "; sudo ping -c 5 vm2.aso.local"+
-                                        "; sudo host vm2.aso.local")
+                                        "; sudo host vm2.aso.local"+
+                                        f";\n")
     waiting = input("Press enter when vm2 is done")
     session.console.keyboard.put_keys("sudo nano /etc/resolv.conf"+
                                         ";sudo ping -c 5 vm1.aso.local"+
                                         ";sudo ping -c 5 vm2.aso.local"+
-                                        ";sudo host vm2.aso.local")
+                                        ";sudo host vm2.aso.local"+
+                                        f";\n")
     
 def create_dhcp(session,session2):
     print("in isc-dhcp-server write INTERFACESv4='eth0'")
@@ -90,7 +92,8 @@ def create_dhcp(session,session2):
                                         "; sudo nano /etc/default/isc-dhcp-server"+
                                         "; sudo nano /etc/dhcp/dhcpd.conf"+
                                         "; sudo systemctl restart isc-dhcp-server"+
-                                        "; sudo systemctl status isc-dhcp-server")
+                                        "; sudo systemctl status isc-dhcp-server"+
+                                        f";\n")
     waiting = input("Press enter when vm2 is done")
     session.console.keyboard.put_keys("sudo nano ifdown 10.1.2.101/24"+
                                         "; sudo nano /etc/network/interfaces.d/40-network-cfg"+
@@ -99,7 +102,8 @@ def create_dhcp(session,session2):
                                         "; sudo ipa a"+
                                         "; sudo dhclient -r eth0"+
                                         "; sudo dhclient eth0"+
-                                        "; sudo ip a")
+                                        "; sudo ip a"+
+                                        )
 
 
 
