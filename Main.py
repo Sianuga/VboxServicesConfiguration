@@ -304,10 +304,9 @@ def create_dns(session,session2):
     print("You need to write nameserver 10.1.2.102 in resolv.conf file in vm1")
     session2.console.keyboard.put_keys("sudo apt update"+
                                         "; sudo apt install bind9 bind9utils bind9-doc dnsutils"+
-                                        "; sudo cd /etc/bind"+
-                                        "; sudo nano named.conf.local"+
-                                        "; sudo cp db.local db.aso.local"+
-                                        "; sudo nano db.aso.local"+
+                                        "; sudo nano /etc/bind/named.conf.local"+
+                                        "; sudo cp /etc/bind/db.local /etc/bind/db.aso.local"+
+                                        "; sudo nano /etc/bind/db.aso.local"+
                                         "; sudo nano /etc/bind/named.conf.options"+
                                         "; sudo systemctl restart bind9"+
                                         "; sudo named-checkonf /etc/bind/named.conf"+
@@ -319,12 +318,14 @@ def create_dns(session,session2):
                                         "; sudo nslookup vm2.aso.local"+
                                         "; sudo ping -c 5 vm1.aso.local"+
                                         "; sudo ping -c 5 vm2.aso.local"+
-                                        "; sudo host vm2.aso.local")
+                                        "; sudo host vm2.aso.local"+
+                                        f";\n")
     
     session.console.keyboard.put_keys("sudo nano /etc/resolv.conf"+
                                         ";sudo ping -c 5 vm1.aso.local"+
                                         ";sudo ping -c 5 vm2.aso.local"+
-                                        ";sudo host vm2.aso.local")
+                                        ";sudo host vm2.aso.local"+
+                                        f";\n")
     
 def create_dhcp(session,session2):
     print("in isc-dhcp-server write INTERFACESv4='eth0'")
@@ -336,15 +337,17 @@ def create_dhcp(session,session2):
                                         "; sudo nano /etc/default/isc-dhcp-server"+
                                         "; sudo nano /etc/dhcp/dhcpd.conf"+
                                         "; sudo systemctl restart isc-dhcp-server"+
-                                        "; sudo systemctl status isc-dhcp-server")
-    session.console.keyboard.put_keys("sudo nano ifdown 10.1.2.101/24"+
+                                        "; sudo systemctl status isc-dhcp-server"+
+                                        f";\n")
+    session.console.keyboard.put_keys("sudo ifdown 10.1.2.101/24"+
                                         "; sudo nano /etc/network/interfaces.d/40-network-cfg"+
                                         "; sudo ifup eth0"+
                                         "; sudo dhclient eth0"+
-                                        "; sudo ipa a"+
+                                        "; sudo ip a"+
                                         "; sudo dhclient -r eth0"+
                                         "; sudo dhclient eth0"+
-                                        "; sudo ip a")
+                                        "; sudo ip a"+
+                                        f";\n")
     
 def main():
     print("Welcome to the script configuring your VMs! The setup is in progress")
